@@ -16,13 +16,13 @@ import java.time.Duration;
 @Slf4j
 public class AwgApiClient {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
     private final BotProperties.AwgApi config;
 
-    public AwgApiClient(BotProperties botProperties, ObjectMapper objectMapper) {
+    public AwgApiClient(BotProperties botProperties) {
         this.config = botProperties.getAwgApi();
-        this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
@@ -33,9 +33,6 @@ public class AwgApiClient {
                 && config.getToken() != null && !config.getToken().isBlank();
     }
 
-    /**
-     * Create a new peer. Returns vpn:// URI string.
-     */
     public CreatePeerResult createPeer() {
         HttpRequest request = newRequest("/peers")
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -46,7 +43,7 @@ public class AwgApiClient {
                 log.error("AWG API create peer failed: {} {}", response.statusCode(), response.body());
                 return null;
             }
-            JsonNode json = objectMapper.readTree(response.body());
+            JsonNode json = MAPPER.readTree(response.body());
             return new CreatePeerResult(
                     json.get("client_ip").asText(),
                     json.get("vpn_uri").asText()
@@ -57,9 +54,6 @@ public class AwgApiClient {
         }
     }
 
-    /**
-     * Delete a peer by client IP. Returns true if successful.
-     */
     public boolean deletePeer(String clientIp) {
         HttpRequest request = newRequest("/peers/" + clientIp)
                 .DELETE()
