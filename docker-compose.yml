@@ -16,6 +16,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-app}
       BOT_TOKEN: ${BOT_TOKEN}
       BOT_ADMIN_IDS: ${BOT_ADMIN_IDS:-}
+      AWG_API_URL: ${AWG_API_URL:-}
+      AWG_API_TOKEN: ${AWG_API_TOKEN:-}
     networks:
       - oms-network
 

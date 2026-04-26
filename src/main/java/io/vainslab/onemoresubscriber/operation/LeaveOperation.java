@@ -6,18 +6,25 @@ import io.vainslab.onemoresubscriber.handler.ServiceHandlerRegistry;
 import io.vainslab.onemoresubscriber.handler.SubscriptionLifecycleHook;
 import io.vainslab.onemoresubscriber.service.AuditService;
 import io.vainslab.onemoresubscriber.service.SubscriptionService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class LeaveOperation implements ServiceOperation {
 
     private final SubscriptionService subscriptionService;
     private final AuditService auditService;
-    private final ServiceHandlerRegistry handlerRegistry;
+    private final ObjectProvider<ServiceHandlerRegistry> handlerRegistryProvider;
+
+    public LeaveOperation(SubscriptionService subscriptionService,
+                          AuditService auditService,
+                          ObjectProvider<ServiceHandlerRegistry> handlerRegistryProvider) {
+        this.subscriptionService = subscriptionService;
+        this.auditService = auditService;
+        this.handlerRegistryProvider = handlerRegistryProvider;
+    }
 
     @Override
     public String getCode() { return "leave"; }
@@ -39,7 +46,7 @@ public class LeaveOperation implements ServiceOperation {
 
     @Override
     public void execute(OperationContext ctx) {
-        SubscriptionLifecycleHook hook = handlerRegistry
+        SubscriptionLifecycleHook hook = handlerRegistryProvider.getObject()
                 .getHandler(ctx.getService().getServiceType()).getLifecycleHook();
         if (hook != null) {
             try {
