@@ -66,10 +66,11 @@ public class NewKeyOperation implements ServiceOperation {
         log.info("Created VPN key ip={} for subscription={} user={}",
                 result.clientIp(), sub.getId(), ctx.getBotUser().getTelegramId());
 
-        // Send vpn:// URI as a separate message (so user can copy it)
         ctx.getSender().send(ctx.getChatId(),
-                "🔑 Ваш VPN-ключ:\n\n```\n" + result.vpnUri() + "\n```\n\n"
-                + "Скопируйте и вставьте в приложение AmneziaVPN.");
+                "🔑 Ваш новый ключ ниже.\n"
+                + "Старый ключ будет удалён.\n"
+                + "Скопируйте новый и вставьте в приложение AmneziaVPN.");
+        ctx.getSender().send(ctx.getChatId(), "<pre>" + result.vpnUri() + "</pre>");
         ctx.reply("✅ Ключ выдан.", keyboard);
     }
 }
