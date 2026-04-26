@@ -11,13 +11,13 @@ public class VpnServiceHandler extends AbstractServiceHandler {
     private final List<ServiceOperation> customOperations;
     private final SubscriptionLifecycleHook lifecycleHook;
 
-    public VpnServiceHandler(JoinOperation join, LeaveOperation leave,
+    public VpnServiceHandler(ApplyOperation apply, JoinOperation join, LeaveOperation leave,
                              MakePaymentOperation pay, MyPaymentsOperation myPay,
                              DeletePaymentOperation delPay, TipOperation tip,
                              MessageCreatorOperation msg, BackOperation back,
                              NewKeyOperation newKey,
                              VpnLifecycleHook vpnLifecycleHook) {
-        super(List.of(join, leave, pay, myPay, delPay, tip, msg, back));
+        super(List.of(apply, join, leave, pay, myPay, delPay, tip, msg, back));
         this.customOperations = List.of(newKey);
         this.lifecycleHook = vpnLifecycleHook;
     }

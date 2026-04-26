@@ -19,7 +19,7 @@ public class MessageCreatorOperation implements ServiceOperation {
 
     @Override
     public String getButtonLabel() {
-        return "✉\uFE0F Написать создателю";
+        return "✝️ Написать создателю";
     }
 
     @Override

@@ -8,11 +8,11 @@ import java.util.List;
 @Component
 public class DefaultServiceHandler extends AbstractServiceHandler {
 
-    public DefaultServiceHandler(JoinOperation join, LeaveOperation leave,
+    public DefaultServiceHandler(ApplyOperation apply, JoinOperation join, LeaveOperation leave,
                                   MakePaymentOperation pay, MyPaymentsOperation myPay,
                                   DeletePaymentOperation delPay, TipOperation tip,
                                   MessageCreatorOperation msg, BackOperation back) {
-        super(List.of(join, leave, pay, myPay, delPay, tip, msg, back));
+        super(List.of(apply, join, leave, pay, myPay, delPay, tip, msg, back));
     }
 
     @Override
