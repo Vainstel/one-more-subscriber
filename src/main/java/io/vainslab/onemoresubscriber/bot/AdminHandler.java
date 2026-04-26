@@ -6,17 +6,19 @@ import io.vainslab.onemoresubscriber.entity.BotUser;
 import io.vainslab.onemoresubscriber.entity.Payment;
 import io.vainslab.onemoresubscriber.entity.Service;
 import io.vainslab.onemoresubscriber.entity.Subscription;
+import io.vainslab.onemoresubscriber.handler.ServiceHandlerRegistry;
+import io.vainslab.onemoresubscriber.handler.SubscriptionLifecycleHook;
 import io.vainslab.onemoresubscriber.repository.ServiceRepository;
 import io.vainslab.onemoresubscriber.service.AuditService;
 import io.vainslab.onemoresubscriber.service.PaymentService;
 import io.vainslab.onemoresubscriber.service.ServiceReportBuilder;
 import io.vainslab.onemoresubscriber.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +28,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AdminHandler {
 
     private static final int USERS_PER_PAGE = 5;
@@ -40,6 +43,7 @@ public class AdminHandler {
     private final PaymentService paymentService;
     private final ServiceReportBuilder reportBuilder;
     private final AuditService auditService;
+    private final ServiceHandlerRegistry handlerRegistry;
 
     public boolean handleCallback(String data, Long chatId, Integer messageId, BotMessageSender sender, BotUser adminUser) {
         if (data.startsWith(CallbackPrefix.ADMIN_SERVICE)) {
@@ -337,6 +341,16 @@ public class AdminHandler {
 
         Long serviceId = sub.getService().getId();
         String userName = sub.getUser().getDisplayName();
+
+        SubscriptionLifecycleHook hook = handlerRegistry
+                .getHandler(sub.getService().getServiceType()).getLifecycleHook();
+        if (hook != null) {
+            try {
+                hook.onLeave(sub);
+            } catch (Exception e) {
+                log.error("Lifecycle hook onLeave failed on kick for subscription={}", subId, e);
+            }
+        }
 
         subscriptionService.kick(subId);
         auditService.logKick(adminUser, sub.getUser(), sub.getService().getName());

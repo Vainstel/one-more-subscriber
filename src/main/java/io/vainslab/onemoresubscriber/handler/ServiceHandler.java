@@ -30,4 +30,8 @@ public interface ServiceHandler {
                                    Subscription subscription,
                                    int memberCount,
                                    java.math.BigDecimal userBalance);
+
+    default SubscriptionLifecycleHook getLifecycleHook() {
+        return null;
+    }
 }

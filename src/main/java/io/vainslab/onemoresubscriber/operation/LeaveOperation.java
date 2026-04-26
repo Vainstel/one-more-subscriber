@@ -2,17 +2,22 @@ package io.vainslab.onemoresubscriber.operation;
 
 import io.vainslab.onemoresubscriber.bot.KeyboardBuilder;
 import io.vainslab.onemoresubscriber.entity.Subscription;
+import io.vainslab.onemoresubscriber.handler.ServiceHandlerRegistry;
+import io.vainslab.onemoresubscriber.handler.SubscriptionLifecycleHook;
 import io.vainslab.onemoresubscriber.service.AuditService;
 import io.vainslab.onemoresubscriber.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class LeaveOperation implements ServiceOperation {
 
     private final SubscriptionService subscriptionService;
     private final AuditService auditService;
+    private final ServiceHandlerRegistry handlerRegistry;
 
     @Override
     public String getCode() { return "leave"; }
@@ -34,6 +39,16 @@ public class LeaveOperation implements ServiceOperation {
 
     @Override
     public void execute(OperationContext ctx) {
+        SubscriptionLifecycleHook hook = handlerRegistry
+                .getHandler(ctx.getService().getServiceType()).getLifecycleHook();
+        if (hook != null) {
+            try {
+                hook.onLeave(ctx.getSubscription());
+            } catch (Exception e) {
+                log.error("Lifecycle hook onLeave failed for subscription={}", ctx.getSubscription().getId(), e);
+            }
+        }
+
         subscriptionService.leave(ctx.getSubscription().getId());
         auditService.logLeave(ctx.getBotUser(), ctx.getService().getName());
         ctx.reply("Вы покинули <b>" + ctx.getService().getName() + "</b>. До встречи!",

@@ -18,6 +18,7 @@ public class BotProperties {
     private List<Long> adminIds = List.of();
     private Notification notification = new Notification();
     private PaymentConfig payment = new PaymentConfig();
+    private AwgApi awgApi = new AwgApi();
 
     public boolean isAdmin(Long telegramId) {
         return adminIds.contains(telegramId);
@@ -34,5 +35,12 @@ public class BotProperties {
     @Setter
     public static class PaymentConfig {
         private int deleteWindowHours = 48;
+    }
+
+    @Getter
+    @Setter
+    public static class AwgApi {
+        private String url;
+        private String token;
     }
 }

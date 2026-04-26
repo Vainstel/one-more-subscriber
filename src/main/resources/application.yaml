@@ -23,3 +23,6 @@ bot:
     reminder-interval-days: 3
   payment:
     delete-window-hours: 48
+  awg-api:
+    url: ${AWG_API_URL:}
+    token: ${AWG_API_TOKEN:}
