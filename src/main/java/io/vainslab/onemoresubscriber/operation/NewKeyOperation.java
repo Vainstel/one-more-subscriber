@@ -68,7 +68,7 @@ public class NewKeyOperation implements ServiceOperation {
 
         // Send vpn:// URI as a separate message (so user can copy it)
         ctx.getSender().send(ctx.getChatId(),
-                "🔑 Ваш VPN-ключ:\n\n<code>" + result.vpnUri() + "</code>\n\n"
+                "🔑 Ваш VPN-ключ:\n\n```\n" + result.vpnUri() + "\n```\n\n"
                 + "Скопируйте и вставьте в приложение AmneziaVPN.");
         ctx.reply("✅ Ключ выдан.", keyboard);
     }
