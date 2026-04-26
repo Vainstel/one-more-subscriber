@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    image: one-more-subscriber:latest
+    container_name: oms-app
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://oms-postgres:5432/subscriptions
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-app}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-app}
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_ADMIN_IDS: ${BOT_ADMIN_IDS:-}
+    networks:
+      - oms-network
+
+  db:
+    image: postgres:16
+    container_name: oms-postgres
+    ports:
+      - "5437:5432"
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: subscriptions
+      POSTGRES_USER: ${DB_USERNAME:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-app}
+    volumes:
+      - oms-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d subscriptions"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - oms-network
+
+volumes:
+  oms-pgdata:
+    driver: local
+
+networks:
+  oms-network:
+    driver: bridge

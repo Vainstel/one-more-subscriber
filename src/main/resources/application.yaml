@@ -1,0 +1,25 @@
+server:
+  port: 8011
+
+spring:
+  application:
+    name: one-more-subscriber
+  datasource:
+    url: jdbc:postgresql://localhost:5432/subscriptions
+    username: app
+    password: app
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+bot:
+  token: ${BOT_TOKEN:}
+  admin-ids: ${BOT_ADMIN_IDS:}
+  notification:
+    check-interval: PT1H
+    reminder-interval-days: 3
+  payment:
+    delete-window-hours: 48

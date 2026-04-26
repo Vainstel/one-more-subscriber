@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://oms-postgres:5432/subscriptions
+
+bot:
+  token: ${BOT_TOKEN}
