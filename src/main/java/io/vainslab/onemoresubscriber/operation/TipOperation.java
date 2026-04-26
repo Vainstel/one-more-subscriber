@@ -29,7 +29,7 @@ public class TipOperation implements ServiceOperation {
 
     @Override
     public boolean isAvailable(Subscription subscription) {
-        return subscription != null && subscription.getActive();
+        return false; // temporarily disabled
     }
 
     @Override
