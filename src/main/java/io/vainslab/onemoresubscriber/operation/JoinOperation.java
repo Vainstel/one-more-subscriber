@@ -24,7 +24,7 @@ public class JoinOperation implements ServiceOperation {
 
     @Override
     public String getButtonLabel() {
-        return "\uD83D\uDE80 Присоединиться";
+        return "🔐 Вступить с паролем";
     }
 
     @Override
