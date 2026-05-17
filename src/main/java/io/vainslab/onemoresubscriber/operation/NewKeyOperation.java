@@ -7,7 +7,11 @@ import io.vainslab.onemoresubscriber.service.AwgApiClient;
 import io.vainslab.onemoresubscriber.service.AwgApiClient.CreatePeerResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class NewKeyOperation implements ServiceOperation {
 
     private static final String META_VPN_IP = "vpn_client_ip";
+    private static final long OLD_KEY_DELETE_DELAY_SECONDS = 10;
 
     private final AwgApiClient awgApiClient;
     private final SubscriptionRepository subscriptionRepository;
@@ -27,7 +32,7 @@ public class NewKeyOperation implements ServiceOperation {
 
     @Override
     public String getButtonLabel() {
-        return "\uD83D\uDD11 Новый ключ";
+        return "🔑 Новый ключ";
     }
 
     @Override
@@ -40,26 +45,14 @@ public class NewKeyOperation implements ServiceOperation {
         Subscription sub = ctx.getSubscription();
         var keyboard = KeyboardBuilder.backToServiceKeyboard(ctx.getService().getId());
 
-        // Delete old key if exists
         String oldIp = (String) sub.getMeta().get(META_VPN_IP);
-        if (oldIp != null) {
-            boolean deleted = awgApiClient.deletePeer(oldIp);
-            if (!deleted) {
-                log.warn("Failed to delete old VPN key ip={} for subscription={}", oldIp, sub.getId());
-                ctx.reply("❌ Не удалось удалить старый ключ. Попробуйте позже.", keyboard);
-                return;
-            }
-            log.info("Deleted old VPN key ip={} for subscription={}", oldIp, sub.getId());
-        }
 
-        // Create new key
         CreatePeerResult result = awgApiClient.createPeer();
         if (result == null) {
             ctx.reply("❌ Не удалось создать ключ. Попробуйте позже.", keyboard);
             return;
         }
 
-        // Save IP to meta
         sub.getMeta().put(META_VPN_IP, result.clientIp());
         subscriptionRepository.save(sub);
 
@@ -72,5 +65,25 @@ public class NewKeyOperation implements ServiceOperation {
                 + "Скопируйте новый и вставьте в приложение AmneziaVPN.");
         ctx.getSender().send(ctx.getChatId(), "<pre>" + result.vpnUri() + "</pre>");
         ctx.reply("✅ Ключ выдан.", keyboard);
+
+        if (oldIp != null) {
+            deleteOldKeyAsync(oldIp, sub.getId());
+        }
+    }
+
+    @Async
+    void deleteOldKeyAsync(String oldIp, Long subscriptionId) {
+        try {
+            TimeUnit.SECONDS.sleep(OLD_KEY_DELETE_DELAY_SECONDS);
+            boolean deleted = awgApiClient.deletePeer(oldIp);
+            if (deleted) {
+                log.info("Deleted old VPN key ip={} for subscription={}", oldIp, subscriptionId);
+            } else {
+                log.warn("Skipped: failed to delete old VPN key ip={} for subscription={}", oldIp, subscriptionId);
+            }
+        } catch (Exception e) {
+            log.warn("Skipped: error deleting old VPN key ip={} for subscription={}: {}",
+                    oldIp, subscriptionId, e.getMessage());
+        }
     }
 }
