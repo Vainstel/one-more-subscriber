@@ -232,7 +232,7 @@ public class SubscriptionBot extends TelegramLongPollingBot {
 
     private void executeOperation(Long chatId, Integer messageId, BotUser user,
                                    Long serviceId, String opCode) {
-        Service service = serviceRepository.findById(serviceId).orElse(null);
+        Service service = serviceRepository.findByIdWithCreator(serviceId).orElse(null);
         if (service == null) return;
 
         Subscription subscription = subscriptionService
